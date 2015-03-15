@@ -85,6 +85,7 @@ public class PersonRestResource {
     @Produces( {MediaType.APPLICATION_JSON} )
     public Map<Long, Person> listPersons() {
 
+        LOG.debug( "persons [{}]", personBean.listPersons().size() );
         return personBean.listPersons();
     }
 
@@ -92,16 +93,16 @@ public class PersonRestResource {
     @Path( "/add" )
     @Consumes( {MediaType.APPLICATION_JSON} )
     @Produces( {MediaType.APPLICATION_JSON} )
-    public JsonResponse<Person> addPerson( Person person ) {
+    public JsonResponse<Map<Long, Person>> addPerson( Person person ) {
 
         LOG.debug( "Person : {}", person.toString() );
         personBean.storePerson( person );
 
         LOG.debug( "Persons[{}] : {}", personBean.listPersons().size(), personBean.listPersons() );
 
-        JsonResponse<Person> json = new JsonResponse<>();
+        JsonResponse<Map<Long, Person>> json = new JsonResponse<>();
         json.setStatus( StatusResponse.OK );
-        json.setObject( person );
+        json.setObject( personBean.listPersons() );
 
         return json;
     }

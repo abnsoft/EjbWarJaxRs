@@ -128,7 +128,10 @@ $(document).ready(function(){
                     console.log("AJAX OK");
                     var r=response.object;
                     console.log( "res="+JSON.stringify(response.object) );
-                    viewModel.addP(response.object);
+                    
+                    var mappedPersons = $.map(response.object, function(item){ return new Person(item)});
+                    viewModel.persons(mappedPersons);
+                    
                  }else{
                     console.log("AJAX ERROR : "+response.message);
                  }
@@ -138,23 +141,23 @@ $(document).ready(function(){
                  alert('Error occured!' + e.message);
              }
         });
-        loadJSON();
+        //$.loadJSON();
         $("#frmAdd")[0].reset();
         });
     //
-    var loadJSON = function(){
-        
+    $.loadJSON = function(){
+        setTimeout(function(){}, 3000);
         	$.getJSON( prefix+"/rs/personService/list", function(data) { 
         	    // Now use this data to update your view models, 
         	    // and Knockout will update your UI automatically
-                //alert( JSON.stringify( data ) );
+                //alert( "LOAD="+JSON.stringify( data ) );
                 //
                 var mappedPersons = $.map(data, function(item){ return new Person(item)});
                 viewModel.persons(mappedPersons);
         	});
         };
 
-        loadJSON();
+        $.loadJSON();
         
 });
 
@@ -192,9 +195,9 @@ $(document).ready(function(){
                                                 </tr>
                                                 <tr>
                                                     <td class="trH1 trW1">GID</td>
-                                                    <td class="trW2"><span id="gidL">0</span><input
+                                                    <td class="trW2"><span id="gidL">NULL</span><input
                                                         type="hidden" name="gid" id="gid" class="required"
-                                                        value="0" /></td>
+                                                        value="" /></td>
                                                 </tr>
                                                 <tr>
                                                     <td class="trH1 trW1">Фамилия</td>

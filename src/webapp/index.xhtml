@@ -1,0 +1,283 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html">
+
+<f:loadBundle basename="resources" var="msg" />
+
+<head>
+<title><ui:insert name="pageTitle">Person Service</ui:insert></title>
+<style type="text/css">
+body {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 14px;
+}
+
+.header {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 18px;
+}
+
+.bottom {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 9px;
+    text-align: center;
+    vertical-align: middle;
+    color: #8E969D;
+}
+
+.th {
+    text-align: center;
+}
+
+.trH1 {
+    height: 30px;
+}
+
+.trW1 {
+    height: 30%;
+}
+
+.trW2 {
+    height: 70%;
+}
+
+.input1 {
+    width: 90%;
+    font-family: sans-serif;
+    font-size: small;
+}
+</style>
+
+<h:outputScript library="default" name="js/knockout-3.3.0.debug.js" />
+
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" />
+<script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+<h:outputScript library="default" name="js/jquery.serializejson.js" />
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.min.js"></script>
+
+<script>
+$(function() {
+    $( "#birthday" ).datepicker({
+    	changeMonth: true,
+    	changeYear: true
+    	});
+    $( "#birthday" ).datepicker( "option", "dateFormat", "yy-mm-dd" );
+});
+
+/* KnockOut */ 
+
+var personModel = function(fn,ln,mn,bd){
+        this.fn = ko.observable(fn);
+        this.ln = ko.observable(ln);
+        this.nn = ko.observable(mn);
+        this.bd = ko.observable(bd);
+}
+    
+var GiftModel = function(gifts) {
+    var self = this;
+    self.gifts = ko.observableArray(gifts);
+    self.person = ko.observableArray([{fn:ko.observable(""),ln:ko.observable(""),mn:ko.observable(""),bd:ko.observable("")}]);
+//    self.person = ko.observableArray(personModel);
+        
+    /* self.person = ko.observableArray(ko.utils.arrayMap(person, function(pers){
+        return {fn:pers.fn, ln:pers.ln, mn:pers.mn, bd:pers.bd};
+        })); */
+ 
+    self.addGift = function() {
+        self.gifts.push({
+            fn1: "",
+            ln1: "",
+            mn1: "",
+            bd1: "",
+        });
+    };
+ 
+/*  
+    self.removeGift = function(gift) {
+        self.gifts.remove(gift);
+    };
+ 
+    self.save = function(form) {
+        alert("Could now transmit to server: " + ko.utils.stringifyJson(self.gifts));
+        // To actually transmit to server as a regular form post, write this: ko.utils.postJson($("form")[0], self.gifts);
+    };
+ */
+/* 
+    self.save = function() {
+        alert( ko.toJSON(self.person) );
+        
+        $.ajax("#{request.contextPath}/rs/personService/add", {
+            data: ko.toJSON(self.person),
+            type: "post", contentType: "application/json",
+            success: function(result) { alert(result) }
+        });
+    }; */
+
+ 
+};
+ 
+var viewModel = new GiftModel([
+    { fn1: "Nikitin", ln1: "Andre", mn1:"Borisovich", bd1:"27/11/1974" },
+]);
+
+var prefix = '#{request.contextPath}';
+
+$(document).ready(function(){
+	ko.applyBindings(viewModel);
+    // 
+    $("#btnAdd").click(function(){
+
+//            data: $("#frmAdd").serializeJSON(),
+// {"firstname":"","lastname":"","middlename":"","birthday":""}
+        console.log( $("#frmAdd").serializeJSON() );
+        
+        $.ajax({ 
+            type: "POST",
+            url: prefix + '/rs/personService/add',
+            data: JSON.stringify( $("#frmAdd").serializeJSON() ),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(response){   
+                 
+                console.log("SUCCESS");             
+                // we have the response
+                if(response.status == "OK"){
+                    console.log("AJAX OK");
+                    var r=response.object;
+                    console.log( "res="+response.object );
+                    //fMsg(response.message,"msgSuccess",id);
+                    //f2(r,id);
+                    // increment 
+                    if(fl){
+                        $('#savedAddressesNumber').val(id+1);
+                        console.log( "update savedAddressesNumber="+$('#savedAddressesNumber').val() );
+                    }
+                 }else{
+                    console.log("AJAX ERROR : "+response.message);
+                    //fMsg(response.message,"msgError");
+                 }
+             },
+             error: function(e){
+
+                 alert('Error occured!' + e.message);
+             }
+        })});
+
+    $("#btnAdd2").click(function(){
+        $.post(prefix + '/rs/personService/add',
+                $("#frmAdd").serializeJSON(),
+        function(data, status){
+            alert("Data: " + data + "\nStatus: " + status);
+        }, 
+        "json");
+    });
+    
+});
+
+
+
+</script>
+
+</head>
+
+<body bgcolor="#ffffff">
+    <table style="border: 1px solid #CAD6E0" align="center" cellpadding="0" cellspacing="0" border="0"
+        width="600">
+        <tbody>
+
+            <tr>
+                <td class="header" height="42" align="center" valign="middle" width="100%" bgcolor="#E4EBEB">
+                    <ui:insert name="pageHeader">Person Service</ui:insert>
+                </td>
+            </tr>
+            <tr>
+                <td height="1" width="100%" bgcolor="#CAD6E0"></td>
+            </tr>
+
+            <tr>
+                <td width="100%" colspan="2">
+                    <table width="100%" style="height: 150px" align="left" cellpadding="0" cellspacing="0"
+                        border="0">
+                        <tbody>
+                            <tr>
+                                <td align="center" width="100%" valign="middle"><ui:insert name="body">
+                                        <form id="frmAdd">
+                                            <table width="90%" cellspacing="0" cellpadding="0">
+                                                <tr>
+                                                    <td colspan="2" class="th"><h1>JAX-RS</h1></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="trH1 trW1">Фамилия</td>
+                                                    <td class="trW2"><input type="text" name="firstname"
+                                                        id="firstname" class="input1 required" /></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="trH1">Имя</td>
+                                                    <td><input type="text" name="lastname" id="lastname"
+                                                        class="input1 required" /></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="trH1">Отчество</td>
+                                                    <td><input type="text" name="middlename"
+                                                        id="middlename" class="input1 required" /></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="trH1">Дата Рождения</td>
+                                                    <td><input type="text" name="birthday" id="birthday"
+                                                        class="input1 required" /></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="trH1">&nbsp;</td>
+                                                    <td><input id="btnAdd" type="button" name="store"
+                                                        value="Save" /></td>
+                                                </tr>
+                                            </table>
+                                        </form>
+                                        <br />
+                                        <br />
+                                    </ui:insert></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <form action='/someServerSideHandler'>
+                        Length=<span data-bind='text: gifts().length' />
+                        <table data-bind='visible: gifts().length > 0'>
+                            <thead>
+                                <tr>
+                                    <th>Firstname</th>
+                                    <th>Lastname</th>
+                                    <th>Middle</th>
+                                    <th>Birthday</th>
+                                    <th />
+                                </tr>
+                            </thead>
+                            <tbody data-bind='foreach: gifts'>
+                                <tr>
+                                    <td><input class='required' data-bind='value: fn1, uniqueName: true' /></td>
+                                    <td><input class='required' data-bind='value: ln1, uniqueName: true' /></td>
+                                    <td><input class='required' data-bind='value: mn1, uniqueName: true' /></td>
+                                    <td><input class='required' data-bind='value: bd1, uniqueName: true' /></td>
+
+                                    <td><a href='#' data-bind='click: $root.removeGift'>Delete</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+
+
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="2" valign="bottom" height="1" width="100%" bgcolor="#CAD6E0"></td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+
+</html>

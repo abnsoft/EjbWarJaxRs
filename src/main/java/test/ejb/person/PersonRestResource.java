@@ -1,6 +1,7 @@
 package test.ejb.person;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.ejb.EJB;
@@ -22,6 +23,7 @@ import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import test.ejb.person.JsonResponse.StatusResponse;
 import test.ejb.person.entity.Person;
 
 /**
@@ -81,7 +83,7 @@ public class PersonRestResource {
     @GET
     @Path( "/list" )
     @Produces( {MediaType.APPLICATION_JSON} )
-    public List<Person> listPersons() {
+    public Map<Long, Person> listPersons() {
 
         return personBean.listPersons();
     }
@@ -89,15 +91,19 @@ public class PersonRestResource {
     @POST
     @Path( "/add" )
     @Consumes( {MediaType.APPLICATION_JSON} )
-    @Produces( {MediaType.TEXT_PLAIN} )
-    public String addPerson( Person person ) {
+    @Produces( {MediaType.APPLICATION_JSON} )
+    public JsonResponse<Person> addPerson( Person person ) {
 
         LOG.debug( "Person : {}", person.toString() );
         personBean.storePerson( person );
 
         LOG.debug( "Persons[{}] : {}", personBean.listPersons().size(), personBean.listPersons() );
 
-        return person.toString();
+        JsonResponse<Person> json = new JsonResponse<>();
+        json.setStatus( StatusResponse.OK );
+        json.setObject( person );
+
+        return json;
     }
 
 }

@@ -1,7 +1,9 @@
 package test.ejb.person;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
@@ -22,7 +24,7 @@ import test.ejb.person.entity.Person;
 @StatefulTimeout( unit = TimeUnit.MINUTES, value = 30 )
 public class PersonBean {
 
-    private List<Person> persons;
+    private Map<Long, Person> persons;
 
     private static final Logger LOG = LoggerFactory.getLogger( PersonBean.class );
 
@@ -39,7 +41,7 @@ public class PersonBean {
     @PostConstruct
     public void init() {
 
-        persons = new ArrayList<Person>();
+        persons = new HashMap<Long, Person>();
         LOG.debug( "Person initialised." );
     }
 
@@ -51,8 +53,7 @@ public class PersonBean {
         if ( person.getGid() == null ) {
             person.setGid( (long) this.persons.size() );
         }
-        this.persons.add( person );
-
+        persons.put( person.getGid(), person );
     }
 
     /**
@@ -67,7 +68,7 @@ public class PersonBean {
     /**
      * @return
      */
-    public List<Person> listPersons() {
+    public Map<Long, Person> listPersons() {
 
         return this.persons;
     }

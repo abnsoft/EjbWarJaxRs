@@ -48,7 +48,10 @@ body {
 }
 </style>
 
+<h:outputScript library="default" name="js/json2.js" />
+
 <h:outputScript library="default" name="js/knockout-3.3.0.debug.js" />
+<h:outputScript library="default" name="js/knockout.mapping-latest.debug.js" />
 
 <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" />
 <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
@@ -69,69 +72,46 @@ $(function() {
 
 /* KnockOut */ 
 
-var personModel = function(fn,ln,mn,bd){
-        this.fn = ko.observable(fn);
-        this.ln = ko.observable(ln);
-        this.nn = ko.observable(mn);
-        this.bd = ko.observable(bd);
+function Person(p){
+    this.gid = ko.observable(p.gid);    
+    this.firstname = ko.observable(p.firstname);    
+    this.lastname = ko.observable(p.lastname);    
+    this.middlename = ko.observable(p.middlename);    
+    this.birthday = ko.observable(p.birthday);    
 }
-    
-var GiftModel = function(gifts) {
-    var self = this;
-    self.gifts = ko.observableArray(gifts);
-    self.person = ko.observableArray([{fn:ko.observable(""),ln:ko.observable(""),mn:ko.observable(""),bd:ko.observable("")}]);
-//    self.person = ko.observableArray(personModel);
-        
-    /* self.person = ko.observableArray(ko.utils.arrayMap(person, function(pers){
-        return {fn:pers.fn, ln:pers.ln, mn:pers.mn, bd:pers.bd};
-        })); */
- 
-    self.addGift = function() {
-        self.gifts.push({
-            fn1: "",
-            ln1: "",
-            mn1: "",
-            bd1: "",
-        });
-    };
- 
-/*  
-    self.removeGift = function(gift) {
-        self.gifts.remove(gift);
-    };
- 
-    self.save = function(form) {
-        alert("Could now transmit to server: " + ko.utils.stringifyJson(self.gifts));
-        // To actually transmit to server as a regular form post, write this: ko.utils.postJson($("form")[0], self.gifts);
-    };
- */
-/* 
-    self.save = function() {
-        alert( ko.toJSON(self.person) );
-        
-        $.ajax("#{request.contextPath}/rs/personService/add", {
-            data: ko.toJSON(self.person),
-            type: "post", contentType: "application/json",
-            success: function(result) { alert(result) }
-        });
-    }; */
 
- 
+var PersonModel = function(persons) {
+    var self = this;
+    self.persons = ko.observableArray([]); 
+
+    self.addP = function(p){
+        self.persons.push(p);
+        }
+
+    self.editPerson = function(p){
+    	var t = ko.mapping.toJS(p);
+        $("#gidL").html(t.gid);
+        $("#gid").val(t.gid);
+        $("#firstname").val(t.firstname);
+        $("#lastname").val(t.lastname);
+        $("#middlename").val(t.middlename);
+        $("#birthday").val(t.birthday);
+        }
 };
  
-var viewModel = new GiftModel([
-    { fn1: "Nikitin", ln1: "Andre", mn1:"Borisovich", bd1:"27/11/1974" },
+var viewModel = new PersonModel([
+    { firstname: "Nikitin", lastname: "Andre", middlename:"Borisovich", birthday:"27/11/1974" },
 ]);
 
 var prefix = '#{request.contextPath}';
 
 $(document).ready(function(){
+    
 	ko.applyBindings(viewModel);
+
     // 
     $("#btnAdd").click(function(){
 
-//            data: $("#frmAdd").serializeJSON(),
-// {"firstname":"","lastname":"","middlename":"","birthday":""}
         console.log( $("#frmAdd").serializeJSON() );
         
         $.ajax({ 
@@ -147,34 +127,35 @@ $(document).ready(function(){
                 if(response.status == "OK"){
                     console.log("AJAX OK");
                     var r=response.object;
-                    console.log( "res="+response.object );
-                    //fMsg(response.message,"msgSuccess",id);
-                    //f2(r,id);
-                    // increment 
-                    if(fl){
-                        $('#savedAddressesNumber').val(id+1);
-                        console.log( "update savedAddressesNumber="+$('#savedAddressesNumber').val() );
-                    }
+                    console.log( "res="+JSON.stringify(response.object) );
+                    viewModel.addP(response.object);
                  }else{
                     console.log("AJAX ERROR : "+response.message);
-                    //fMsg(response.message,"msgError");
                  }
              },
              error: function(e){
 
                  alert('Error occured!' + e.message);
              }
-        })});
+        });
+        loadJSON();
+        $("#frmAdd")[0].reset();
+        });
+    //
+    var loadJSON = function(){
+        
+        	$.getJSON( prefix+"/rs/personService/list", function(data) { 
+        	    // Now use this data to update your view models, 
+        	    // and Knockout will update your UI automatically
+                //alert( JSON.stringify( data ) );
+                //
+                var mappedPersons = $.map(data, function(item){ return new Person(item)});
+                viewModel.persons(mappedPersons);
+        	});
+        };
 
-    $("#btnAdd2").click(function(){
-        $.post(prefix + '/rs/personService/add',
-                $("#frmAdd").serializeJSON(),
-        function(data, status){
-            alert("Data: " + data + "\nStatus: " + status);
-        }, 
-        "json");
-    });
-    
+        loadJSON();
+        
 });
 
 
@@ -208,6 +189,12 @@ $(document).ready(function(){
                                             <table width="90%" cellspacing="0" cellpadding="0">
                                                 <tr>
                                                     <td colspan="2" class="th"><h1>JAX-RS</h1></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="trH1 trW1">GID</td>
+                                                    <td class="trW2"><span id="gidL">0</span><input
+                                                        type="hidden" name="gid" id="gid" class="required"
+                                                        value="0" /></td>
                                                 </tr>
                                                 <tr>
                                                     <td class="trH1 trW1">Фамилия</td>
@@ -244,10 +231,11 @@ $(document).ready(function(){
                     </table>
 
                     <form action='/someServerSideHandler'>
-                        Length=<span data-bind='text: gifts().length' />
-                        <table data-bind='visible: gifts().length > 0'>
+                        Length=<span data-bind='text: persons().length' />
+                        <table data-bind='visible: persons().length > 0' width="100%">
                             <thead>
                                 <tr>
+                                    <th>GID</th>
                                     <th>Firstname</th>
                                     <th>Lastname</th>
                                     <th>Middle</th>
@@ -255,14 +243,15 @@ $(document).ready(function(){
                                     <th />
                                 </tr>
                             </thead>
-                            <tbody data-bind='foreach: gifts'>
+                            <tbody data-bind='foreach: persons'>
                                 <tr>
-                                    <td><input class='required' data-bind='value: fn1, uniqueName: true' /></td>
-                                    <td><input class='required' data-bind='value: ln1, uniqueName: true' /></td>
-                                    <td><input class='required' data-bind='value: mn1, uniqueName: true' /></td>
-                                    <td><input class='required' data-bind='value: bd1, uniqueName: true' /></td>
+                                    <td width="15%"><span data-bind="text: gid" /></td>
+                                    <td width="20%"><span data-bind="text: firstname" /></td>
+                                    <td width="15%"><span data-bind="text: lastname" /></td>
+                                    <td width="15%"><span data-bind="text: middlename" /></td>
+                                    <td width="25%"><span data-bind="text: birthday" /></td>
 
-                                    <td><a href='#' data-bind='click: $root.removeGift'>Delete</a></td>
+                                    <td width="10%"><a href='#' data-bind='click: $root.editPerson'>Edit</a></td>
                                 </tr>
                             </tbody>
                         </table>

@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.LocalBean;
+import javax.ejb.Singleton;
 import javax.ejb.Stateful;
 import javax.ejb.StatefulTimeout;
 import javax.ejb.Stateless;
@@ -20,8 +21,9 @@ import test.ejb.person.entity.Person;
 /**
  * Session Bean implementation class PersonProcessor
  */
-@Stateful
-@StatefulTimeout( unit = TimeUnit.MINUTES, value = 30 )
+//@Stateful
+//@StatefulTimeout( unit = TimeUnit.MINUTES, value = 30 )
+@Singleton
 public class PersonBean {
 
     private Map<Long, Person> persons;

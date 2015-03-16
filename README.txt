@@ -12,3 +12,10 @@ in this project are used :
 
 
 This example shows how to use EJB in WAR.
+
+This project was builded with MAVEN (or Eclipse - as you wish).
+Any way it should be imported into IDE as MAVEN Project, because it does not contain any IDE depended files.
+
+Full source files are included into PersonWeb-FULL-SRC.zip archive.
+
+Best regards AnNik <ABN.dev@mail.ru>

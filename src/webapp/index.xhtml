@@ -141,8 +141,9 @@ $(document).ready(function(){
                  alert('Error occured!' + e.message);
              }
         });
-        //$.loadJSON();
         $("#frmAdd")[0].reset();
+        $("#gid").val("");
+        $("#gidL").html("NULL");
         });
     //
     $.loadJSON = function(){

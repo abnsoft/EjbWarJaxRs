@@ -1,13 +1,8 @@
 package test.ejb.person;
 
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import javax.ejb.EJB;
-import javax.ejb.Stateful;
-import javax.ejb.StatefulTimeout;
-import javax.enterprise.context.SessionScoped;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -30,9 +25,6 @@ import test.ejb.person.entity.Person;
  * Session Bean implementation class PersonRestBean
  */
 @Path( "/personService" )
-@Stateful
-@StatefulTimeout( unit = TimeUnit.MINUTES, value = 30 )
-@SessionScoped
 public class PersonRestResource {
 
     public static final String URL = "/rs/personService";
